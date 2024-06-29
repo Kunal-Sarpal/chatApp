@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+    <script src="/js/chessgame.js"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 5px;
+            background: #d1cfcf;
+        }
+        ::-webkit-scrollbar-thumb {
+            border-radius: 20px;
+            background: #000;
+        }
+        .chat {
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 10px;
+            padding-left: 20px;
+            margin: 3px;
+            display: flex;
+            justify-content: space-between;
+            word-wrap: break-word;
+            height: 60px;
+        }
+        .chat.me {
+            background-color: hsl(169, 100%, 18%);/* Blue shade for "Me" messages */
+            color: white;
+        }
+        .chat.user {
+            background-color: #202c33; /* Yellow shade for "User" messages */
+            color: rgb(198, 198, 198);
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white min-h-screen flex items-center justify-center">
+    <div class="container mx-auto p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- My Chat Section -->
+            <div class="bg-gray-900 p-4 rounded-md  shadow-lg">
+                <h2 class="text-lg font-bold mb-4">My Chat</h2>
+                <div class="mb-4">
+                    <input type="text"
+                        class="rounded-sm w-full border-none p-3 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        placeholder="Type your message here..." oninput="gettext(event)">
+                    <button
+                        class="mt-2 p-3 w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="senddata()">Send</button>
+                </div>
+                <div id="chatContainer1" class="bg-gray-700 p-4 rounded-lg h-96 overflow-y-auto">
+                    <!-- My Messages will be appended here -->
+                </div>
+            </div>
+
+            <!-- World Chat Section -->
+            <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+                <h2 class="text-lg font-bold mb-4">World Chat</h2>
+                <div id="chatContainer" class="bg-gray-700 p-4 rounded-lg h-96 overflow-y-auto">
+                    <!-- World Messages will be appended here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        let data = "";
+        function gettext(event) {
+            data = event.target.value;
+        }
+
+        function senddata() {
+            socket.emit("data", data);
+            const input = document.querySelector('input[type="text"]');
+            input.value = ''; // Clear input field
+            data = ''; // Reset data variable
+        }
+
+        socket.on("data", (data) => {
+            const chatContainer1 = document.getElementById("chatContainer1");
+            const div = document.createElement("div");
+            div.classList.add("chat", "bg-gray-200", "text-gray-900", "p-3");
+            div.innerHTML = data;
+            chatContainer1.appendChild(div);
+            chatContainer1.scrollTop = chatContainer1.scrollHeight; // Scroll to the bottom
+
+            const chatContainer = document.getElementById("chatContainer");
+            const worldDiv = document.createElement("div");
+            worldDiv.classList.add("chat", "bg-gray-200", "text-gray-900", "p-3");
+            worldDiv.innerHTML = data;
+            chatContainer.appendChild(worldDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+        });
+    </script>
+</body>
+</html>
